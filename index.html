@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>pifxui — AI photo cataloguing &amp; face recognition on a Raspberry Pi</title>
-    <meta name="description"
-          content="Local AI photo catalogue built with JavaFX and Spring Boot: computer-vision face recognition, a vision-language model for scene understanding, and a local LLM for natural-language search — all running on a Raspberry Pi 5, no cloud inference.">
+    <meta name="description" content="Local AI photo catalogue built with JavaFX and Spring Boot: computer-vision face recognition, a vision-language model for scene understanding, and a local LLM for natural-language search — all running on a Raspberry Pi 5, no cloud inference.">
     <meta name="robots" content="index, follow">
-    <meta name="keywords"
-          content="AI photo cataloguing, computer vision, face recognition, vision-language model, local LLM inference, Ollama, edge AI, on-device AI, Raspberry Pi AI project, natural language photo search">
+    <meta name="keywords" content="AI photo cataloguing, computer vision, face recognition, vision-language model, local LLM inference, Ollama, edge AI, on-device AI, Raspberry Pi AI project, natural language photo search">
 
     <!-- TODO: replace with the real published URL once this is live on GitHub Pages -->
     <link rel="canonical" href="https://gabrsstt.github.io/pifxui-ai/">
@@ -17,8 +15,7 @@
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="pifxui">
     <meta property="og:title" content="pifxui — AI photo cataloguing & face recognition on a Raspberry Pi">
-    <meta property="og:description"
-          content="A personal project: local computer vision, a vision-language model, and a local LLM for natural-language search — all running offline on a $100 Raspberry Pi 5, no cloud AI involved.">
+    <meta property="og:description" content="A personal project: local computer vision, a vision-language model, and a local LLM for natural-language search — all running offline on a $100 Raspberry Pi 5, no cloud AI involved.">
     <!-- TODO: add a 1200x630 image at this path (see note below) -->
     <meta property="og:image" content="images/og-cover.jpg">
     <meta property="og:url" content="https://gabrsstt.github.io/pifxui-ai/">
@@ -26,14 +23,12 @@
     <!-- Twitter/X card — reuses the Open Graph image -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="pifxui — AI photo cataloguing & face recognition on a Raspberry Pi">
-    <meta name="twitter:description"
-          content="Local computer vision, a vision-language model, and a local LLM — all running offline on a $100 Raspberry Pi 5.">
+    <meta name="twitter:description" content="Local computer vision, a vision-language model, and a local LLM — all running offline on a $100 Raspberry Pi 5.">
     <meta name="twitter:image" content="images/og-cover.jpg">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
-          rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Structured data: tells Google what this page is about, beyond just keywords -->
     <script type="application/ld+json">
@@ -69,13 +64,9 @@
             --mono: 'IBM Plex Mono', 'SFMono-Regular', monospace;
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
-        html {
-            scroll-behavior: smooth;
-        }
+        html { scroll-behavior: smooth; }
 
         body {
             margin: 0;
@@ -86,30 +77,16 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        ::selection {
-            background: var(--safelight-bright);
-            color: var(--paper);
-        }
+        ::selection { background: var(--safelight-bright); color: var(--paper); }
 
-        a {
-            color: var(--safelight);
-            text-decoration-thickness: 1.5px;
-            text-underline-offset: 3px;
-        }
-
-        a:hover {
-            color: var(--safelight-bright);
-        }
-
+        a { color: var(--safelight); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+        a:hover { color: var(--safelight-bright); }
         a:focus-visible, button:focus-visible, summary:focus-visible {
             outline: 2px solid var(--teal);
             outline-offset: 3px;
         }
 
-        img {
-            max-width: 100%;
-            display: block;
-        }
+        img { max-width: 100%; display: block; }
 
         .wrap {
             max-width: 1180px;
@@ -125,10 +102,7 @@
             padding: 72px 0;
             border-top: 1px solid var(--rule);
         }
-
-        section:first-of-type {
-            border-top: none;
-        }
+        section:first-of-type { border-top: none; }
 
         h1, h2, h3 {
             font-family: var(--sans);
@@ -148,14 +122,8 @@
             font-weight: 600;
         }
 
-        p {
-            margin: 0 0 1.1em 0;
-            color: var(--ink-soft);
-        }
-
-        p:last-child {
-            margin-bottom: 0;
-        }
+        p { margin: 0 0 1.1em 0; color: var(--ink-soft); }
+        p:last-child { margin-bottom: 0; }
 
         .prose ul {
             margin: 0 0 1.1em 0;
@@ -304,19 +272,9 @@
         }
 
         @media (max-width: 620px) {
-            .spec-sheet {
-                grid-template-columns: 1fr;
-            }
-
-            .spec-row dt {
-                border-bottom: none;
-                padding-bottom: 4px;
-            }
-
-            .spec-row dd {
-                grid-column: 1;
-                padding-top: 0;
-            }
+            .spec-sheet { grid-template-columns: 1fr; }
+            .spec-row dt { border-bottom: none; padding-bottom: 4px; }
+            .spec-row dd { grid-column: 1; padding-top: 0; }
         }
 
         /* ---------- Feature grid ---------- */
@@ -329,9 +287,7 @@
         }
 
         @media (max-width: 720px) {
-            .feature-grid {
-                grid-template-columns: 1fr;
-            }
+            .feature-grid { grid-template-columns: 1fr; }
         }
 
         .feature-grid h3 {
@@ -378,10 +334,7 @@
             border-radius: 3px;
         }
 
-        .query span.prompt {
-            color: var(--teal);
-            margin-right: 8px;
-        }
+        .query span.prompt { color: var(--teal); margin-right: 8px; }
 
         /* ---------- Architecture diagram ---------- */
 
@@ -406,11 +359,7 @@
             flex: 1;
         }
 
-        .diagram-box .mono {
-            display: block;
-            color: var(--teal);
-            margin-bottom: 4px;
-        }
+        .diagram-box .mono { display: block; color: var(--teal); margin-bottom: 4px; }
 
         .diagram-arrow {
             display: flex;
@@ -429,18 +378,9 @@
         }
 
         @media (max-width: 720px) {
-            .diagram-row {
-                flex-direction: column;
-            }
-
-            .diagram-arrow {
-                transform: rotate(90deg);
-                padding: 8px 0;
-            }
-
-            .diagram-branches {
-                grid-template-columns: 1fr;
-            }
+            .diagram-row { flex-direction: column; }
+            .diagram-arrow { transform: rotate(90deg); padding: 8px 0; }
+            .diagram-branches { grid-template-columns: 1fr; }
         }
 
         /* ---------- Gallery (contact sheet) ---------- */
@@ -453,9 +393,7 @@
         }
 
         @media (max-width: 640px) {
-            .contact-sheet {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
+            .contact-sheet { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
 
         .frame {
@@ -469,11 +407,7 @@
             overflow: hidden;
         }
 
-        .frame img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .frame img { width: 100%; height: 100%; object-fit: cover; }
 
         .frame .placeholder-label {
             border: none;
@@ -499,11 +433,7 @@
             max-width: 760px;
         }
 
-        .video-frame iframe {
-            width: 100%;
-            height: 100%;
-            border: 0;
-        }
+        .video-frame iframe { width: 100%; height: 100%; border: 0; }
 
         /* ---------- Footer ---------- */
 
@@ -512,11 +442,7 @@
             border-top: 1px solid var(--rule);
         }
 
-        footer p {
-            font-family: var(--mono);
-            font-size: 0.8rem;
-            color: var(--ink-soft);
-        }
+        footer p { font-family: var(--mono); font-size: 0.8rem; color: var(--ink-soft); }
 
     </style>
 </head>
@@ -543,8 +469,7 @@
             <span class="spec-chip">local AI, no cloud inference</span>
         </div>
 
-        <p class="hero-note">A personal, after-hours project — not something built at work, though software development
-            is also what I do for a living</p>
+        <p class="hero-note">A personal, after-hours project — not something built at work, though software development is also what I do for a living</p>
 
         <div class="hero-image">
             <div class="placeholder-label">
@@ -567,10 +492,10 @@
                 what's happening in it — then lets me search all of that with a
                 plain sentence, like "photos of Sophie at the beach", instead of
                 scrolling through folders looking for it myself. Whatever comes
-                back can also just play as a slideshow on the small screen or the TV,
-                like a digital photo frame that already knows what you asked for —
-                and I can control any of it from my phone or a laptop too, not
-                just the screen on the wall.
+                back I can browse right there, play as a slideshow on the small
+                screen or the TV, like a digital photo frame that already knows
+                what you asked for — and I can do any of that from my phone or a
+                laptop too, not just the screen on the wall.
             </p>
             <p>
                 The interesting part isn't the photo app — it's how it's built.
@@ -584,18 +509,10 @@
             </p>
             <p>Building it involved:</p>
             <ul>
-                <li>designing and building a complete application end to end — the hardware it runs on, the backend, and
-                    the interface
-                </li>
-                <li>working hands-on with modern AI — computer vision and language models — wired into a real, working
-                    product, not a one-off demo
-                </li>
-                <li>making it all work within real constraints, on a computer that costs under $100 and is less powerful
-                    than a smartphone
-                </li>
-                <li>choosing the harder path of keeping everything private and offline, instead of defaulting to a cloud
-                    service
-                </li>
+                <li>designing and building a complete application end to end — the hardware it runs on, the backend, and the interface</li>
+                <li>working hands-on with modern AI — computer vision and language models — wired into a real, working product</li>
+                <li>making it all work within real constraints, on a computer that costs under $100 and is less powerful than a smartphone</li>
+                <li>choosing the harder path of keeping everything private and offline, instead of defaulting to a cloud service</li>
             </ul>
         </div>
     </section>
@@ -664,9 +581,7 @@
                 and TV:
             </p>
             <ul>
-                <li>synced Spotify lyrics for whatever's currently playing (we all love Karaoke!). Spotify doesn't play
-                    on the Pi, can be playing anywhere. The app connects to it via Spotify APIs
-                </li>
+                <li>synced Spotify lyrics for whatever's currently playing (we all love Karaoke!). Spotify doesn't play on the Pi, can be playing anywhere. The app connects to it via Spotify APIs</li>
                 <li>indoor air quality and pollution readings from an Enviro+ sensor</li>
                 <li>a handful of other small utilities</li>
             </ul>
@@ -699,9 +614,7 @@
                 <ul>
                     <li>Face details, matched against known people in the database</li>
                     <li>EXIF metadata — camera, date, time, GPS, etc</li>
-                    <li>Location, resolved from GPS to a real place name. It resolves country, city and region using GPS
-                        coordinates
-                    </li>
+                    <li>Location, resolved from GPS to a real place name. It resolves country, city and region using GPS coordinates</li>
                     <li>Landmarks, when a recognisable one is in frame</li>
                     <li>Description, tags, activities, and general mood</li>
                 </ul>
@@ -729,10 +642,8 @@
                     <div class="query"><span class="prompt">&gt;</span>give all the photos with Sophie</div>
                     <div class="query"><span class="prompt">&gt;</span>show me sunset photos from Italy</div>
                     <div class="query"><span class="prompt">&gt;</span>find pictures at the beach with the dog</div>
-                    <div class="query"><span class="prompt">&gt;</span>find pictures with Sophie and Mark at the pool
-                    </div>
-                    <div class="query"><span class="prompt">&gt;</span>find pictures with Sophie at the beach in Greece
-                    </div>
+                    <div class="query"><span class="prompt">&gt;</span>find pictures with Sophie and Mark at the pool</div>
+                    <div class="query"><span class="prompt">&gt;</span>find pictures with Sophie at the beach in Greece</div>
                     <div class="query"><span class="prompt">&gt;</span>find pictures of people laughing</div>
                 </div>
             </div>
@@ -770,19 +681,21 @@
         <div class="prose">
             <p>
                 The touchscreen and TV aren't the only way in. The Spring Boot
-                backend exposes all of this — cataloguing, search, and slideshow
-                control — as REST endpoints, backing a set of web pages. Search
-                results, cataloguing progress, and what's currently playing on the
-                TV can all be checked and controlled from any browser on the
-                network, phone included, without touching the Pi itself.
+                backend exposes all of this — cataloguing, search, browsing, and
+                slideshow control — as REST endpoints, backing a set of web pages.
+                You can browse the catalogue, page through the results of a
+                natural-language search, check cataloguing progress, and see or
+                control what's currently playing on the TV, all from any browser
+                on the network, phone included, without touching the Pi itself.
             </p>
             <p>
                 In practice that means I can kick off cataloguing a new folder,
-                run a natural-language search, or start a slideshow of the
-                results, all from my phone, while the Pi just gets on with it
-                headless in another room. The API is self-documented with Swagger
-                UI, generated straight from the Spring Boot endpoints, so it's
-                also just usable directly for anything the web pages don't cover.
+                run a natural-language search and just scroll through the
+                results on my phone, or send those same results to the TV as a
+                slideshow — all without going near the Pi. The API is
+                self-documented with Swagger UI, generated straight from the
+                Spring Boot endpoints, so it's also just usable directly for
+                anything the web pages don't cover.
             </p>
         </div>
     </section>
@@ -1078,8 +991,7 @@
             <p>Questions, feedback — reach out.</p>
             <p>Gabriele Rossetti</p>
             <p><a id="contact-email" class="mono" href="#">enable JavaScript to view</a></p>
-            <noscript><p>My email is built with JavaScript to keep it out of automated scrapers — please view this page
-                with JavaScript enabled to see it.</p></noscript>
+            <noscript><p>My email is built with JavaScript to keep it out of automated scrapers — please view this page with JavaScript enabled to see it.</p></noscript>
         </div>
     </section>
 
