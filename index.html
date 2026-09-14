@@ -1,996 +1,1111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>pifxui — AI photo cataloguing &amp; face recognition on a Raspberry Pi</title>
-<meta name="description" content="Local AI photo catalogue built with JavaFX and Spring Boot: computer-vision face recognition, a vision-language model for scene understanding, and a local LLM for natural-language search — all running on a Raspberry Pi 5, no cloud inference.">
-<meta name="robots" content="index, follow">
-<meta name="keywords" content="AI photo cataloguing, computer vision, face recognition, vision-language model, local LLM inference, Ollama, edge AI, on-device AI, Raspberry Pi AI project, natural language photo search">
-
-<!-- TODO: replace with the real published URL once this is live on GitHub Pages -->
-<link rel="canonical" href="https://gabrsstt.github.io/pifxui-ai/">
-
-<!-- Open Graph: controls the preview card on LinkedIn, Slack, etc. -->
-<meta property="og:type" content="article">
-<meta property="og:site_name" content="pifxui">
-<meta property="og:title" content="pifxui — AI photo cataloguing & face recognition on a Raspberry Pi">
-<meta property="og:description" content="A personal project: local computer vision, a vision-language model, and a local LLM for natural-language search — all running offline on a $100 Raspberry Pi 5, no cloud AI involved.">
-<!-- TODO: add a 1200x630 image at this path (see note below) -->
-<meta property="og:image" content="images/og-cover.jpg">
-<meta property="og:url" content="https://gabrsstt.github.io/pifxui-ai/">
-
-<!-- Twitter/X card — reuses the Open Graph image -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="pifxui — AI photo cataloguing & face recognition on a Raspberry Pi">
-<meta name="twitter:description" content="Local computer vision, a vision-language model, and a local LLM — all running offline on a $100 Raspberry Pi 5.">
-<meta name="twitter:image" content="images/og-cover.jpg">
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-<!-- Structured data: tells Google what this page is about, beyond just keywords -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "TechArticle",
-  "headline": "pifxui — AI photo cataloguing & face recognition on a Raspberry Pi",
-  "description": "A personal project building an AI-powered photo catalogue and natural-language search system, running entirely on local hardware including a Raspberry Pi 5 — no cloud AI inference.",
-  "about": [
-    "Computer vision",
-    "Face recognition",
-    "Vision-language models",
-    "Local LLM inference",
-    "Edge AI",
-    "Raspberry Pi"
-  ],
-  "keywords": "AI photo cataloguing, computer vision, face recognition, vision-language models, local LLM inference, Ollama, edge AI, Raspberry Pi",
-  "image": "images/og-cover.jpg"
-}
-</script>
-
-<style>
-  :root {
-    --paper: #EAE6DC;
-    --paper-alt: #E1DBC9;
-    --ink: #21251F;
-    --ink-soft: #4E5347;
-    --rule: #C6BEA9;
-    --safelight: #9E3226;
-    --safelight-bright: #B23A2E;
-    --teal: #2C6663;
-    --sans: 'IBM Plex Sans', -apple-system, sans-serif;
-    --mono: 'IBM Plex Mono', 'SFMono-Regular', monospace;
-  }
-
-  * { box-sizing: border-box; }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    margin: 0;
-    background: var(--paper);
-    color: var(--ink);
-    font-family: var(--sans);
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  ::selection { background: var(--safelight-bright); color: var(--paper); }
-
-  a { color: var(--safelight); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
-  a:hover { color: var(--safelight-bright); }
-  a:focus-visible, button:focus-visible, summary:focus-visible {
-    outline: 2px solid var(--teal);
-    outline-offset: 3px;
-  }
-
-  img { max-width: 100%; display: block; }
-
-  .wrap {
-    max-width: 1180px;
-    margin: 0 auto;
-    padding: 0 28px;
-  }
-
-  .prose {
-    max-width: 66ch;
-  }
-
-  section {
-    padding: 72px 0;
-    border-top: 1px solid var(--rule);
-  }
-  section:first-of-type { border-top: none; }
-
-  h1, h2, h3 {
-    font-family: var(--sans);
-    font-weight: 700;
-    line-height: 1.15;
-    margin: 0 0 0.5em 0;
-    letter-spacing: -0.01em;
-  }
-
-  h2 {
-    font-size: clamp(1.5rem, 3vw, 2rem);
-    max-width: 24ch;
-  }
-
-  h3 {
-    font-size: 1.05rem;
-    font-weight: 600;
-  }
-
-  p { margin: 0 0 1.1em 0; color: var(--ink-soft); }
-  p:last-child { margin-bottom: 0; }
-
-  .prose ul {
-    margin: 0 0 1.1em 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .prose ul li {
-    padding: 6px 0 6px 20px;
-    position: relative;
-    color: var(--ink-soft);
-  }
-
-  .prose ul li::before {
-    content: "▸";
-    position: absolute;
-    left: 0;
-    color: var(--teal);
-  }
-
-  .mono {
-    font-family: var(--mono);
-    font-size: 0.85rem;
-  }
-
-  /* ---------- Hero ---------- */
-
-  .hero {
-    padding: 88px 0 56px 0;
-  }
-
-  .hero-kicker {
-    font-family: var(--mono);
-    font-size: 0.85rem;
-    color: var(--teal);
-    margin-bottom: 18px;
-  }
-
-  .hero h1 {
-    font-size: clamp(2.4rem, 6vw, 4.2rem);
-    max-width: 15ch;
-    color: var(--ink);
-  }
-
-  .hero-sub {
-    font-size: 1.2rem;
-    max-width: 42ch;
-    color: var(--ink-soft);
-    margin-top: 18px;
-  }
-
-  .spec-strip {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 36px;
-  }
-
-  .spec-chip {
-    font-family: var(--mono);
-    font-size: 0.8rem;
-    color: var(--ink);
-    border: 1px solid var(--rule);
-    padding: 6px 12px;
-    border-radius: 3px;
-    background: var(--paper-alt);
-  }
-
-  .hero-note {
-    font-family: var(--mono);
-    font-size: 0.8rem;
-    color: var(--ink-soft);
-    margin-top: 18px;
-    max-width: 44ch;
-  }
-
-  .hero-image {
-    margin-top: 48px;
-    aspect-ratio: 16 / 8;
-    border: 1px solid var(--rule);
-    background: repeating-linear-gradient(
-      135deg, var(--paper-alt), var(--paper-alt) 10px, var(--paper) 10px, var(--paper) 20px
-    );
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 20px;
-  }
-
-  .placeholder-label {
-    font-family: var(--mono);
-    font-size: 0.8rem;
-    color: var(--ink-soft);
-    background: var(--paper);
-    border: 1px dashed var(--rule);
-    padding: 10px 16px;
-    max-width: 42ch;
-  }
-
-  /* ---------- Section heads ---------- */
-
-  .section-head {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 8px;
-    margin-bottom: 40px;
-  }
-
-  .section-num {
-    font-family: var(--mono);
-    font-size: 0.85rem;
-    color: var(--teal);
-  }
-
-  /* ---------- Spec sheet (setup) ---------- */
-
-  .spec-sheet {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0;
-    border-top: 1px solid var(--rule);
-    max-width: 780px;
-  }
-
-  .spec-row {
-    display: contents;
-  }
-
-  .spec-row dt, .spec-row dd {
-    padding: 16px 0;
-    border-bottom: 1px solid var(--rule);
-    margin: 0;
-  }
-
-  .spec-row dt {
-    font-family: var(--mono);
-    font-size: 0.85rem;
-    color: var(--teal);
-    padding-right: 24px;
-  }
-
-  .spec-row dd {
-    color: var(--ink);
-    grid-column: 2;
-  }
-
-  @media (max-width: 620px) {
-    .spec-sheet { grid-template-columns: 1fr; }
-    .spec-row dt { border-bottom: none; padding-bottom: 4px; }
-    .spec-row dd { grid-column: 1; padding-top: 0; }
-  }
-
-  /* ---------- Feature grid ---------- */
-
-  .feature-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 36px 48px;
-    margin-top: 8px;
-  }
-
-  @media (max-width: 720px) {
-    .feature-grid { grid-template-columns: 1fr; }
-  }
-
-  .feature-grid h3 {
-    color: var(--ink);
-    margin-bottom: 8px;
-  }
-
-  .feature-grid ul {
-    margin: 10px 0 0 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .feature-grid li {
-    padding: 8px 0 8px 20px;
-    border-top: 1px solid var(--rule);
-    position: relative;
-    color: var(--ink-soft);
-  }
-
-  .feature-grid li::before {
-    content: "▸";
-    position: absolute;
-    left: 0;
-    color: var(--teal);
-  }
-
-  /* ---------- Search examples ---------- */
-
-  .query-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 24px;
-    max-width: 560px;
-  }
-
-  .query {
-    font-family: var(--mono);
-    font-size: 0.9rem;
-    background: var(--ink);
-    color: var(--paper);
-    padding: 12px 16px;
-    border-radius: 3px;
-  }
-
-  .query span.prompt { color: var(--teal); margin-right: 8px; }
-
-  /* ---------- Architecture diagram ---------- */
-
-  .diagram {
-    margin-top: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-
-  .diagram-row {
-    display: flex;
-    align-items: stretch;
-    gap: 0;
-  }
-
-  .diagram-box {
-    border: 1px solid var(--ink);
-    padding: 14px 16px;
-    background: var(--paper-alt);
-    font-size: 0.9rem;
-    flex: 1;
-  }
-
-  .diagram-box .mono { display: block; color: var(--teal); margin-bottom: 4px; }
-
-  .diagram-arrow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 14px;
-    font-family: var(--mono);
-    color: var(--ink-soft);
-  }
-
-  .diagram-branches {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
-    margin: 14px 0;
-  }
-
-  @media (max-width: 720px) {
-    .diagram-row { flex-direction: column; }
-    .diagram-arrow { transform: rotate(90deg); padding: 8px 0; }
-    .diagram-branches { grid-template-columns: 1fr; }
-  }
-
-  /* ---------- Gallery (contact sheet) ---------- */
-
-  .contact-sheet {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 4px;
-    margin-top: 8px;
-  }
-
-  @media (max-width: 640px) {
-    .contact-sheet { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  }
-
-  .frame {
-    aspect-ratio: 1;
-    border: 1px solid var(--rule);
-    background: var(--paper-alt);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .frame img { width: 100%; height: 100%; object-fit: cover; }
-
-  .frame .placeholder-label {
-    border: none;
-    background: transparent;
-    font-size: 0.7rem;
-    padding: 8px;
-  }
-
-  .frame-caption {
-    grid-column: span 3;
-    font-family: var(--mono);
-    font-size: 0.75rem;
-    color: var(--ink-soft);
-    margin-top: -2px;
-  }
-
-  /* ---------- Video ---------- */
-
-  .video-frame {
-    margin-top: 16px;
-    aspect-ratio: 16/9;
-    border: 1px solid var(--rule);
-    max-width: 760px;
-  }
-
-  .video-frame iframe { width: 100%; height: 100%; border: 0; }
-
-  /* ---------- Footer ---------- */
-
-  footer {
-    padding: 48px 0 64px 0;
-    border-top: 1px solid var(--rule);
-  }
-
-  footer p { font-family: var(--mono); font-size: 0.8rem; color: var(--ink-soft); }
-
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pifxui — AI photo cataloguing &amp; face recognition on a Raspberry Pi</title>
+    <meta name="description"
+          content="Local AI photo catalogue built with JavaFX and Spring Boot: computer-vision face recognition, a vision-language model for scene understanding, and a local LLM for natural-language search — all running on a Raspberry Pi 5, no cloud inference.">
+    <meta name="robots" content="index, follow">
+    <meta name="keywords"
+          content="AI photo cataloguing, computer vision, face recognition, vision-language model, local LLM inference, Ollama, edge AI, on-device AI, Raspberry Pi AI project, natural language photo search">
+
+    <!-- TODO: replace with the real published URL once this is live on GitHub Pages -->
+    <link rel="canonical" href="https://gabrsstt.github.io/pifxui-ai/">
+
+    <!-- Open Graph: controls the preview card on LinkedIn, Slack, etc. -->
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="pifxui">
+    <meta property="og:title" content="pifxui — AI photo cataloguing & face recognition on a Raspberry Pi">
+    <meta property="og:description"
+          content="A personal project: local computer vision, a vision-language model, and a local LLM for natural-language search — all running offline on a $100 Raspberry Pi 5, no cloud AI involved.">
+    <!-- TODO: add a 1200x630 image at this path (see note below) -->
+    <meta property="og:image" content="images/og-cover.jpg">
+    <meta property="og:url" content="https://gabrsstt.github.io/pifxui-ai/">
+
+    <!-- Twitter/X card — reuses the Open Graph image -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="pifxui — AI photo cataloguing & face recognition on a Raspberry Pi">
+    <meta name="twitter:description"
+          content="Local computer vision, a vision-language model, and a local LLM — all running offline on a $100 Raspberry Pi 5.">
+    <meta name="twitter:image" content="images/og-cover.jpg">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <!-- Structured data: tells Google what this page is about, beyond just keywords -->
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "TechArticle",
+            "headline": "pifxui — AI photo cataloguing & face recognition on a Raspberry Pi",
+            "description": "A personal project building an AI-powered photo catalogue and natural-language search system, running entirely on local hardware including a Raspberry Pi 5 — no cloud AI inference.",
+            "about": [
+                "Computer vision",
+                "Face recognition",
+                "Vision-language models",
+                "Local LLM inference",
+                "Edge AI",
+                "Raspberry Pi"
+            ],
+            "keywords": "AI photo cataloguing, computer vision, face recognition, vision-language models, local LLM inference, Ollama, edge AI, Raspberry Pi",
+            "image": "images/og-cover.jpg"
+        }
+    </script>
+
+    <style>
+        :root {
+            --paper: #EAE6DC;
+            --paper-alt: #E1DBC9;
+            --ink: #21251F;
+            --ink-soft: #4E5347;
+            --rule: #C6BEA9;
+            --safelight: #9E3226;
+            --safelight-bright: #B23A2E;
+            --teal: #2C6663;
+            --sans: 'IBM Plex Sans', -apple-system, sans-serif;
+            --mono: 'IBM Plex Mono', 'SFMono-Regular', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            background: var(--paper);
+            color: var(--ink);
+            font-family: var(--sans);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::selection {
+            background: var(--safelight-bright);
+            color: var(--paper);
+        }
+
+        a {
+            color: var(--safelight);
+            text-decoration-thickness: 1.5px;
+            text-underline-offset: 3px;
+        }
+
+        a:hover {
+            color: var(--safelight-bright);
+        }
+
+        a:focus-visible, button:focus-visible, summary:focus-visible {
+            outline: 2px solid var(--teal);
+            outline-offset: 3px;
+        }
+
+        img {
+            max-width: 100%;
+            display: block;
+        }
+
+        .wrap {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 0 28px;
+        }
+
+        .prose {
+            max-width: 66ch;
+        }
+
+        section {
+            padding: 72px 0;
+            border-top: 1px solid var(--rule);
+        }
+
+        section:first-of-type {
+            border-top: none;
+        }
+
+        h1, h2, h3 {
+            font-family: var(--sans);
+            font-weight: 700;
+            line-height: 1.15;
+            margin: 0 0 0.5em 0;
+            letter-spacing: -0.01em;
+        }
+
+        h2 {
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            max-width: 24ch;
+        }
+
+        h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+
+        p {
+            margin: 0 0 1.1em 0;
+            color: var(--ink-soft);
+        }
+
+        p:last-child {
+            margin-bottom: 0;
+        }
+
+        .prose ul {
+            margin: 0 0 1.1em 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .prose ul li {
+            padding: 6px 0 6px 20px;
+            position: relative;
+            color: var(--ink-soft);
+        }
+
+        .prose ul li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: var(--teal);
+        }
+
+        .mono {
+            font-family: var(--mono);
+            font-size: 0.85rem;
+        }
+
+        /* ---------- Hero ---------- */
+
+        .hero {
+            padding: 88px 0 56px 0;
+        }
+
+        .hero-kicker {
+            font-family: var(--mono);
+            font-size: 0.85rem;
+            color: var(--teal);
+            margin-bottom: 18px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.4rem, 6vw, 4.2rem);
+            max-width: 15ch;
+            color: var(--ink);
+        }
+
+        .hero-sub {
+            font-size: 1.2rem;
+            max-width: 42ch;
+            color: var(--ink-soft);
+            margin-top: 18px;
+        }
+
+        .spec-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 36px;
+        }
+
+        .spec-chip {
+            font-family: var(--mono);
+            font-size: 0.8rem;
+            color: var(--ink);
+            border: 1px solid var(--rule);
+            padding: 6px 12px;
+            border-radius: 3px;
+            background: var(--paper-alt);
+        }
+
+        .hero-note {
+            font-family: var(--mono);
+            font-size: 0.8rem;
+            color: var(--ink-soft);
+            margin-top: 18px;
+            max-width: 44ch;
+        }
+
+        .hero-image {
+            margin-top: 48px;
+            aspect-ratio: 16 / 8;
+            border: 1px solid var(--rule);
+            background: repeating-linear-gradient(
+                    135deg, var(--paper-alt), var(--paper-alt) 10px, var(--paper) 10px, var(--paper) 20px
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .placeholder-label {
+            font-family: var(--mono);
+            font-size: 0.8rem;
+            color: var(--ink-soft);
+            background: var(--paper);
+            border: 1px dashed var(--rule);
+            padding: 10px 16px;
+            max-width: 42ch;
+        }
+
+        /* ---------- Section heads ---------- */
+
+        .section-head {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 8px;
+            margin-bottom: 40px;
+        }
+
+        .section-num {
+            font-family: var(--mono);
+            font-size: 0.85rem;
+            color: var(--teal);
+        }
+
+        /* ---------- Spec sheet (setup) ---------- */
+
+        .spec-sheet {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0;
+            border-top: 1px solid var(--rule);
+            max-width: 780px;
+        }
+
+        .spec-row {
+            display: contents;
+        }
+
+        .spec-row dt, .spec-row dd {
+            padding: 16px 0;
+            border-bottom: 1px solid var(--rule);
+            margin: 0;
+        }
+
+        .spec-row dt {
+            font-family: var(--mono);
+            font-size: 0.85rem;
+            color: var(--teal);
+            padding-right: 24px;
+        }
+
+        .spec-row dd {
+            color: var(--ink);
+            grid-column: 2;
+        }
+
+        @media (max-width: 620px) {
+            .spec-sheet {
+                grid-template-columns: 1fr;
+            }
+
+            .spec-row dt {
+                border-bottom: none;
+                padding-bottom: 4px;
+            }
+
+            .spec-row dd {
+                grid-column: 1;
+                padding-top: 0;
+            }
+        }
+
+        /* ---------- Feature grid ---------- */
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 36px 48px;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 720px) {
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .feature-grid h3 {
+            color: var(--ink);
+            margin-bottom: 8px;
+        }
+
+        .feature-grid ul {
+            margin: 10px 0 0 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .feature-grid li {
+            padding: 8px 0 8px 20px;
+            border-top: 1px solid var(--rule);
+            position: relative;
+            color: var(--ink-soft);
+        }
+
+        .feature-grid li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: var(--teal);
+        }
+
+        /* ---------- Search examples ---------- */
+
+        .query-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 24px;
+            max-width: 560px;
+        }
+
+        .query {
+            font-family: var(--mono);
+            font-size: 0.9rem;
+            background: var(--ink);
+            color: var(--paper);
+            padding: 12px 16px;
+            border-radius: 3px;
+        }
+
+        .query span.prompt {
+            color: var(--teal);
+            margin-right: 8px;
+        }
+
+        /* ---------- Architecture diagram ---------- */
+
+        .diagram {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .diagram-row {
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+        }
+
+        .diagram-box {
+            border: 1px solid var(--ink);
+            padding: 14px 16px;
+            background: var(--paper-alt);
+            font-size: 0.9rem;
+            flex: 1;
+        }
+
+        .diagram-box .mono {
+            display: block;
+            color: var(--teal);
+            margin-bottom: 4px;
+        }
+
+        .diagram-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 14px;
+            font-family: var(--mono);
+            color: var(--ink-soft);
+        }
+
+        .diagram-branches {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin: 14px 0;
+        }
+
+        @media (max-width: 720px) {
+            .diagram-row {
+                flex-direction: column;
+            }
+
+            .diagram-arrow {
+                transform: rotate(90deg);
+                padding: 8px 0;
+            }
+
+            .diagram-branches {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ---------- Gallery (contact sheet) ---------- */
+
+        .contact-sheet {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 640px) {
+            .contact-sheet {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .frame {
+            aspect-ratio: 1;
+            border: 1px solid var(--rule);
+            background: var(--paper-alt);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .frame .placeholder-label {
+            border: none;
+            background: transparent;
+            font-size: 0.7rem;
+            padding: 8px;
+        }
+
+        .frame-caption {
+            grid-column: span 3;
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            color: var(--ink-soft);
+            margin-top: -2px;
+        }
+
+        /* ---------- Video ---------- */
+
+        .video-frame {
+            margin-top: 16px;
+            aspect-ratio: 16/9;
+            border: 1px solid var(--rule);
+            max-width: 760px;
+        }
+
+        .video-frame iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* ---------- Footer ---------- */
+
+        footer {
+            padding: 48px 0 64px 0;
+            border-top: 1px solid var(--rule);
+        }
+
+        footer p {
+            font-family: var(--mono);
+            font-size: 0.8rem;
+            color: var(--ink-soft);
+        }
+
+    </style>
 </head>
 <body>
 
 <div class="wrap">
 
-  <!-- ============ HERO ============ -->
-  <header class="hero">
-    <div class="hero-kicker mono">project log — photo catalogue</div>
-    <h1>Teaching a Raspberry&nbsp;Pi to know my photo library using AI</h1>
-    <p class="hero-sub">
-      pifxui is a JavaFX app that runs headless on a Raspberry Pi 5, catalogues every
-      photo in my cloud storage using local AI models, and lets me find any
-      of them by describing what's in them — a person, a place, a mood —
-      instead of remembering a folder name.
-    </p>
-
-    <div class="spec-strip">
-      <span class="spec-chip">Raspberry Pi 5 · 8GB</span>
-      <span class="spec-chip">SSD boot</span>
-      <span class="spec-chip">headless / SSH only</span>
-      <span class="spec-chip">JavaFX + Spring Boot</span>
-      <span class="spec-chip">local AI, no cloud inference</span>
-    </div>
-
-    <p class="hero-note">A personal, after-hours project — not something built at work, though software development is also what I do for a living</p>
-
-    <div class="hero-image">
-      <div class="placeholder-label">
-        Will upload a photo at some point<br>
-        <code>images/hero.jpg</code>
-      </div>
-    </div>
-  </header>
-
-  <!-- ============ PLAIN TERMS ============ -->
-  <section id="plain-terms">
-    <div class="section-head">
-      <span class="section-num mono">in short</span>
-      <h2>What this actually is, in plain terms</h2>
-    </div>
-    <div class="prose">
-      <p>
-        I built an app, from scratch, that looks through my personal photo
-        library, works out who's in each photo, where it was taken, and
-        what's happening in it — then lets me search all of that with a
-        plain sentence, like "photos of Sophie at the beach", instead of
-        scrolling through folders looking for it myself. Whatever comes
-        back can also just play as a slideshow on the small screen or the TV,
-        like a digital photo frame that already knows what you asked for.
-      </p>
-      <p>
-        The interesting part isn't the photo app — it's how it's built.
-        Rather than send my photos to a service like Google Photos or a
-        cloud AI provider, every part of the "smart" side of this runs on
-        hardware I own, sitting in my house. That meant designing and
-        building all of it myself: the AI that recognises faces and reads
-        a scene, the piece that understands a typed sentence as a search,
-        the software tying it together, and even the small, inexpensive
-        computer it all runs on.
-      </p>
-      <p>Building it involved:</p>
-      <ul>
-        <li>designing and building a complete application end to end — the hardware it runs on, the backend, and the interface</li>
-        <li>working hands-on with modern AI — computer vision and language models — wired into a real, working product, not a one-off demo</li>
-        <li>making it all work within real constraints, on a computer that costs under $100 and is less powerful than a smartphone</li>
-        <li>choosing the harder path of keeping everything private and offline, instead of defaulting to a cloud service</li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- ============ SETUP ============ -->
-  <section id="setup">
-    <div class="section-head">
-      <span class="section-num mono">the rig</span>
-      <h2>Small, fanless, and never touched directly</h2>
-    </div>
-    <div class="prose">
-      <p>
-        Everything runs on hardware I never actually put my hands on after
-        the initial build. No monitor plugged in for setup, no keyboard —
-        every change goes in over SSH, which shaped a lot of the early
-        decisions about logging and diagnostics.
-      </p>
-      <p>
-        For anyone who hasn't run into one: a Raspberry Pi is a complete,
-        general-purpose computer — just built onto a single small board,
-        with no case, screen, or peripherals included. A Pi 5 costs well
-        under $200. It's also, by most CPU benchmarks, meaningfully less
-        powerful than a modern smartphone — even an iPhone 13 mini, itself
-        years old at this point, scores roughly three times higher on both
-        single- and multi-core tests (don't worry Pi, I still love you).
-      </p>
-    </div>
-
-    <dl class="spec-sheet">
-      <div class="spec-row">
-        <dt>board</dt>
-        <dd>Raspberry Pi 5, 8GB RAM</dd>
-      </div>
-      <div class="spec-row">
-        <dt>boot</dt>
-        <dd>SSD, not SD card — noticeably steadier under sustained I/O</dd>
-      </div>
-      <div class="spec-row">
-        <dt>displays</dt>
-        <dd>A TV and a 10" touchscreen for the slideshow view and other functions (ie. UI)</dd>
-      </div>
-      <div class="spec-row">
-        <dt>input</dt>
-        <dd>None — no mouse or keyboard attached, everything administered over SSH</dd>
-      </div>
-      <div class="spec-row">
-        <dt>storage</dt>
-        <dd>Photos live in cloud storage, mounted locally with rclone</dd>
-      </div>
-      <div class="spec-row">
-        <dt>inference</dt>
-        <dd>Ollama, running locally for both vision and language models</dd>
-      </div>
-    </dl>
-  </section>
-
-  <!-- ============ WHAT IT DOES ============ -->
-  <section id="overview">
-    <div class="section-head">
-      <span class="section-num mono">the app</span>
-      <h2>One JavaFX app, several small jobs — this post is about one of them</h2>
-    </div>
-    <div class="prose">
-      <p>
-        The same JavaFX app runs a few other things on that touchscreen
-        and TV:
-      </p>
-      <ul>
-        <li>synced Spotify lyrics for whatever's currently playing (we all love Karaoke!). Spotify doesn't play on the Pi, can be playing anywhere. The app connects to it via Spotify APIs</li>
-        <li>indoor air quality and pollution readings from an Enviro+ sensor</li>
-        <li>a handful of other small utilities</li>
-      </ul>
-      <p>
-        This page is only about the largest piece: the
-        <strong>photo AI catalogue</strong> — how it processes a photo
-        library and how it answers questions about it.
-      </p>
-    </div>
-  </section>
-
-  <!-- ============ FEATURES ============ -->
-  <section id="features">
-    <div class="section-head">
-      <span class="section-num mono">01 — cataloguing</span>
-      <h2>What happens to a photo the first time it's seen</h2>
-    </div>
-
-    <div class="feature-grid">
-      <div>
-        <h3>Cataloguing a directory</h3>
-        <p>
-          Point it at a folder and it walks every photo inside, skipping
-          anything already processed, and extracts a structured record for
-          each one.
+    <!-- ============ HERO ============ -->
+    <header class="hero">
+        <div class="hero-kicker mono">project log — photo catalogue</div>
+        <h1>Teaching a Raspberry&nbsp;Pi to know my photo library using AI</h1>
+        <p class="hero-sub">
+            pifxui is a JavaFX app that runs headless on a Raspberry Pi 5, catalogues every
+            photo in my cloud storage using local AI models, and lets me find any
+            of them by describing what's in them — a person, a place, a mood —
+            instead of remembering a folder name.
         </p>
-      </div>
-      <div>
-        <h3>What gets extracted per photo</h3>
-        <ul>
-          <li>Face details, matched against known people in the database</li>
-          <li>EXIF metadata — camera, date, time, GPS, etc</li>
-          <li>Location, resolved from GPS to a real place name. It resolves country, city and region using GPS coordinates</li>
-          <li>Landmarks, when a recognisable one is in frame</li>
-          <li>Description, tags, activities, and general mood</li>
-        </ul>
-      </div>
-    </div>
 
-    <div class="section-head" style="margin-top: 64px;">
-      <span class="section-num mono">02 — search</span>
-      <h2>Then you can just ask for what you want</h2>
-    </div>
-
-    <div class="feature-grid">
-      <div>
-        <h3>Structured search</h3>
-        <ul>
-          <li>By person — everyone tagged in a photo in a database</li>
-          <li>By landmark — a specific place or monument</li>
-          <li>By location — city, region, or country</li>
-        </ul>
-      </div>
-      <div>
-        <h3>Natural language search</h3>
-        <p>Or skip the filters and just describe the photo:</p>
-        <div class="query-list">
-          <div class="query"><span class="prompt">&gt;</span>give all the photos with Sophie</div>
-          <div class="query"><span class="prompt">&gt;</span>show me sunset photos from Italy</div>
-          <div class="query"><span class="prompt">&gt;</span>find pictures at the beach with the dog</div>
-          <div class="query"><span class="prompt">&gt;</span>find pictures with Sophie and Mark at the pool</div>
-          <div class="query"><span class="prompt">&gt;</span>find pictures with Sophie at the beach in Greece</div>
-          <div class="query"><span class="prompt">&gt;</span>find pictures of people laughing</div>
+        <div class="spec-strip">
+            <span class="spec-chip">Raspberry Pi 5 · 8GB</span>
+            <span class="spec-chip">SSD boot</span>
+            <span class="spec-chip">headless / SSH only</span>
+            <span class="spec-chip">JavaFX + Spring Boot</span>
+            <span class="spec-chip">local AI, no cloud inference</span>
         </div>
-      </div>
-    </div>
 
-    <div class="section-head" style="margin-top: 64px;">
-      <span class="section-num mono">03 — slideshow</span>
-      <h2>Any search doubles as a slideshow</h2>
-    </div>
-    <div class="prose">
-      <p>
-        The slideshow is where all of this actually gets used day to
-        day — the digital-photo-frame side of the app, cycling through
-        photos on the TV or small screen at a fixed interval.
-        What plays isn't fixed to "everything in the library":
-      </p>
-      <ul>
-        <li>the whole photo library</li>
-        <li>one specific directory</li>
-        <li>every photo of a given person, or a given location</li>
-        <li>whatever a natural-language search just returned</li>
-      </ul>
-      <p>
-        That last one is the one I use most: search "Sophie and Mark at the beach",
-        then let those results run as a slideshow instead of flipping
-        through them one at a time. Search isn't just a lookup here — it's
-        also how you build an ad-hoc slideshow on the fly.
-      </p>
-    </div>
-  </section>
+        <p class="hero-note">A personal, after-hours project — not something built at work, though software development
+            is also what I do for a living</p>
 
-  <!-- ============ ARCHITECTURE ============ -->
-  <section id="architecture">
-    <div class="section-head">
-      <span class="section-num mono">how it's built</span>
-      <h2>General architecture</h2>
-    </div>
-    <div class="prose">
-      <p>
-        The Pi runs the JavaFX front end and a Spring Boot backend side by
-        side, with SQLite holding all the catalogue data. The Pi is capable
-        enough for the app itself and for lighter processing, but running a
-        vision model against every photo would take months to process the
-        whole catalogue — so the heaviest AI work is offloaded to a second
-        machine on the network (still relatively cheap consumer hardware),
-        reachable from Ollama's API, while the Pi stays responsive for the UI.
-      </p>
-    </div>
-
-    <div class="diagram">
-      <div class="diagram-row">
-        <div class="diagram-box">
-          <span class="mono">source</span>
-          Cloud storage, mounted via rclone
+        <div class="hero-image">
+            <div class="placeholder-label">
+                Will upload a photo at some point<br>
+                <code>images/hero.jpg</code>
+            </div>
         </div>
-        <div class="diagram-arrow">→</div>
-        <div class="diagram-box">
-          <span class="mono">pi 5</span>
-          JavaFX UI + Spring Boot + SQLite
+    </header>
+
+    <!-- ============ PLAIN TERMS ============ -->
+    <section id="plain-terms">
+        <div class="section-head">
+            <span class="section-num mono">in short</span>
+            <h2>What this actually is, in plain terms</h2>
         </div>
-      </div>
-
-      <div class="diagram-branches">
-        <div class="diagram-box">
-          <span class="mono">exif</span>
-          Metadata &amp; GPS extraction, reverse-geocoded to a place name
+        <div class="prose">
+            <p>
+                I built an app, from scratch, that looks through my personal photo
+                library, works out who's in each photo, where it was taken, and
+                what's happening in it — then lets me search all of that with a
+                plain sentence, like "photos of Sophie at the beach", instead of
+                scrolling through folders looking for it myself. Whatever comes
+                back can also just play as a slideshow on the small screen or the TV,
+                like a digital photo frame that already knows what you asked for —
+                and I can control any of it from my phone or a laptop too, not
+                just the screen on the wall.
+            </p>
+            <p>
+                The interesting part isn't the photo app — it's how it's built.
+                Rather than send my photos to a service like Google Photos or a
+                cloud AI provider, every part of the "smart" side of this runs on
+                hardware I own, sitting in my house. That meant designing and
+                building all of it myself: the AI that recognises faces and reads
+                a scene, the piece that understands a typed sentence as a search,
+                the software tying it together, and even the small, inexpensive
+                computer it all runs on.
+            </p>
+            <p>Building it involved:</p>
+            <ul>
+                <li>designing and building a complete application end to end — the hardware it runs on, the backend, and
+                    the interface
+                </li>
+                <li>working hands-on with modern AI — computer vision and language models — wired into a real, working
+                    product, not a one-off demo
+                </li>
+                <li>making it all work within real constraints, on a computer that costs under $100 and is less powerful
+                    than a smartphone
+                </li>
+                <li>choosing the harder path of keeping everything private and offline, instead of defaulting to a cloud
+                    service
+                </li>
+            </ul>
         </div>
-        <div class="diagram-box">
-          <span class="mono">faces</span>
-          Detection &amp; matching against known people
+    </section>
+
+    <!-- ============ SETUP ============ -->
+    <section id="setup">
+        <div class="section-head">
+            <span class="section-num mono">the rig</span>
+            <h2>Small, fanless, and never touched directly</h2>
         </div>
-        <div class="diagram-box">
-          <span class="mono">vision</span>
-          Tags, mood, landmarks — via a model on a second machine
+        <div class="prose">
+            <p>
+                Everything runs on hardware I never actually put my hands on after
+                the initial build. No monitor plugged in for setup, no keyboard —
+                every change goes in over SSH, which shaped a lot of the early
+                decisions about logging and diagnostics.
+            </p>
+            <p>
+                For anyone who hasn't run into one: a Raspberry Pi is a complete,
+                general-purpose computer — just built onto a single small board,
+                with no case, screen, or peripherals included. A Pi 5 costs well
+                under $100. It's also, by most CPU benchmarks, meaningfully less
+                powerful than a modern smartphone — even an iPhone 13 mini, itself
+                years old at this point, scores roughly three times higher on both
+                single- and multi-core tests (don't worry Pi, I still love you).
+            </p>
         </div>
-      </div>
 
-      <div class="diagram-row">
-        <div class="diagram-box">
-          <span class="mono">catalogue</span>
-          All of the above merged into one record per photo
+        <dl class="spec-sheet">
+            <div class="spec-row">
+                <dt>board</dt>
+                <dd>Raspberry Pi 5, 8GB RAM</dd>
+            </div>
+            <div class="spec-row">
+                <dt>boot</dt>
+                <dd>SSD, not SD card — noticeably steadier under sustained I/O</dd>
+            </div>
+            <div class="spec-row">
+                <dt>displays</dt>
+                <dd>A TV and a 10" touchscreen for the slideshow view and other functions (ie. UI)</dd>
+            </div>
+            <div class="spec-row">
+                <dt>input</dt>
+                <dd>None — no mouse or keyboard attached, everything administered over SSH</dd>
+            </div>
+            <div class="spec-row">
+                <dt>storage</dt>
+                <dd>Photos live in cloud storage, mounted locally with rclone</dd>
+            </div>
+            <div class="spec-row">
+                <dt>inference</dt>
+                <dd>Ollama, running locally for both vision and language models</dd>
+            </div>
+        </dl>
+    </section>
+
+    <!-- ============ WHAT IT DOES ============ -->
+    <section id="overview">
+        <div class="section-head">
+            <span class="section-num mono">the app</span>
+            <h2>One JavaFX app, several small jobs — this post is about one of them</h2>
         </div>
-        <div class="diagram-arrow">→</div>
-        <div class="diagram-box">
-          <span class="mono">search</span>
-          Structured filters, or a natural-language query
+        <div class="prose">
+            <p>
+                The same JavaFX app runs a few other things on that touchscreen
+                and TV:
+            </p>
+            <ul>
+                <li>synced Spotify lyrics for whatever's currently playing (we all love Karaoke!). Spotify doesn't play
+                    on the Pi, can be playing anywhere. The app connects to it via Spotify APIs
+                </li>
+                <li>indoor air quality and pollution readings from an Enviro+ sensor</li>
+                <li>a handful of other small utilities</li>
+            </ul>
+            <p>
+                This page is only about the largest piece: the
+                <strong>photo AI catalogue</strong> — how it processes a photo
+                library and how it answers questions about it.
+            </p>
         </div>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ============ AI STACK ============ -->
-  <section id="ai-stack">
-    <div class="section-head">
-      <span class="section-num mono">the ai</span>
-      <h2>Three different kinds of AI, one small board</h2>
-    </div>
-    <div class="prose">
-      <p>
-        The catalogue leans on three distinct kinds of AI, each doing a
-        different job: <strong>computer vision</strong> for face detection
-        and recognition, a <strong>vision-language model</strong> for
-        scene understanding — tags, mood, landmarks — and a small
-        <strong>local LLM</strong> for turning a plain-English search into
-        a structured query. Every one of them runs locally, through
-        Ollama, on hardware I own. No photo, no query, and no API call
-        ever leaves the network — there's no cloud AI provider anywhere
-        in the loop, by design, not by accident.
-      </p>
-      <p>
-        That "by design" matters: the photo library is personal, so
-        sending it through a third-party API was off the table from the
-        start. Local inference also means cataloguing thousands of photos
-        — and re-cataloguing them repeatedly during development, while
-        tuning prompts and comparing models — costs electricity, not a
-        per-token bill. The trade-off is that the hardware has to actually
-        carry the load, which shaped a lot of the engineering below.
-      </p>
-    </div>
+    <!-- ============ FEATURES ============ -->
+    <section id="features">
+        <div class="section-head">
+            <span class="section-num mono">01 — cataloguing</span>
+            <h2>What happens to a photo the first time it's seen</h2>
+        </div>
 
-    <div class="spec-strip" style="margin-top: 24px;">
-      <span class="spec-chip">computer vision</span>
-      <span class="spec-chip">face recognition</span>
-      <span class="spec-chip">embedding similarity &amp; clustering</span>
-      <span class="spec-chip">vision-language models</span>
-      <span class="spec-chip">local LLM inference</span>
-      <span class="spec-chip">prompt engineering</span>
-      <span class="spec-chip">structured output / JSON schema</span>
-      <span class="spec-chip">edge / on-device AI</span>
-      <span class="spec-chip">model evaluation</span>
-    </div>
+        <div class="feature-grid">
+            <div>
+                <h3>Cataloguing a directory</h3>
+                <p>
+                    Point it at a folder and it walks every photo inside, skipping
+                    anything already processed, and extracts a structured record for
+                    each one.
+                </p>
+            </div>
+            <div>
+                <h3>What gets extracted per photo</h3>
+                <ul>
+                    <li>Face details, matched against known people in the database</li>
+                    <li>EXIF metadata — camera, date, time, GPS, etc</li>
+                    <li>Location, resolved from GPS to a real place name. It resolves country, city and region using GPS
+                        coordinates
+                    </li>
+                    <li>Landmarks, when a recognisable one is in frame</li>
+                    <li>Description, tags, activities, and general mood</li>
+                </ul>
+            </div>
+        </div>
 
-    <div class="section-head" style="margin-top: 56px;">
-      <h3 style="font-size: 1.2rem;">The local inference rig</h3>
-    </div>
-    <div class="prose">
-      <p>
-        The Pi handles the app, the database, and the lighter local-search
-        model. The vision-language model — the expensive part — runs on a
-        second machine on the same network, reached from the Pi purely
-        through Ollama's API:
-      </p>
-    </div>
-    <div class="spec-strip" style="margin-top: 12px;">
-      <span class="spec-chip">Beelink GTi15 Ultra</span>
-      <span class="spec-chip">64GB RAM</span>
-      <span class="spec-chip">Intel Arc 140T iGPU</span>
-      <span class="spec-chip">Vulkan backend</span>
-      <span class="spec-chip">~99 TOPS</span>
-    </div>
-    <div class="prose" style="margin-top: 20px;">
-      <p>
-        Ollama drives that iGPU through its Vulkan backend, so the vision
-        model runs on-device the same way it would on a discrete GPU, just
-        without one. Two machines, two very different jobs, both entirely
-        local — the split exists purely so a lightweight board can host
-        the app while a heavier model still gets real compute to run on.
-      </p>
-    </div>
+        <div class="section-head" style="margin-top: 64px;">
+            <span class="section-num mono">02 — search</span>
+            <h2>Then you can just ask for what you want</h2>
+        </div>
 
-    <div class="section-head" style="margin-top: 56px;">
-      <h3 style="font-size: 1.2rem;">Four problems that don't show up in a tutorial</h3>
-    </div>
+        <div class="feature-grid">
+            <div>
+                <h3>Structured search</h3>
+                <ul>
+                    <li>By person — everyone tagged in a photo in a database</li>
+                    <li>By landmark — a specific place or monument</li>
+                    <li>By location — city, region, or country</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Natural language search</h3>
+                <p>Or skip the filters and just describe the photo:</p>
+                <div class="query-list">
+                    <div class="query"><span class="prompt">&gt;</span>give all the photos with Sophie</div>
+                    <div class="query"><span class="prompt">&gt;</span>show me sunset photos from Italy</div>
+                    <div class="query"><span class="prompt">&gt;</span>find pictures at the beach with the dog</div>
+                    <div class="query"><span class="prompt">&gt;</span>find pictures with Sophie and Mark at the pool
+                    </div>
+                    <div class="query"><span class="prompt">&gt;</span>find pictures with Sophie at the beach in Greece
+                    </div>
+                    <div class="query"><span class="prompt">&gt;</span>find pictures of people laughing</div>
+                </div>
+            </div>
+        </div>
 
-    <div class="diagram-branches" style="margin-top: 0;">
-      <div class="diagram-box">
-        <span class="mono">hardware split, kept local</span>
-        A Pi 5 can run the app comfortably, but not a vision-language
-        model against every photo. Rather than reach for a cloud API, the
-        heavy inference runs on the second machine above — still on the
-        local network, still no external call. The Pi stays responsive;
-        the expensive model runs where the hardware actually fits it.
-      </div>
-      <div class="diagram-box">
-        <span class="mono">one model loaded at a time</span>
-        Running the vision model and the search model simultaneously
-        would blow the memory budget on modest hardware, so a small model
-        manager swaps which one is loaded based on which job is active —
-        a constraint that mostly disappears if you're calling a hosted
-        API, but is unavoidable the moment inference has to fit on
-        hardware you actually own.
-      </div>
-      <div class="diagram-box">
-        <span class="mono">reliable json from a small model</span>
-        Natural-language search depends on a 3B-parameter local model
-        returning valid, schema-shaped JSON every time — no small ask for
-        a model that size. The fix that mattered most was marking optional
-        fields as <em>required-but-nullable</em> in the schema: an
-        optional field, a small model will often skip outright; a required
-        nullable one, it reliably fills in or explicitly nulls.
-      </div>
-      <div class="diagram-box">
-        <span class="mono">evaluating models on the real task</span>
-        Picking each model meant testing candidates head to head on actual
-        queries and actual hardware, not benchmark scores. The first
-        vision model tried covered structured labels correctly only about
-        56% of the time; a search-model candidate that looked fine on
-        paper OOM-crashed the Pi at run time. The models that shipped were
-        the ones that held up under those conditions, not the newest ones.
-      </div>
-    </div>
-  </section>
+        <div class="section-head" style="margin-top: 64px;">
+            <span class="section-num mono">03 — slideshow</span>
+            <h2>Any search doubles as a slideshow</h2>
+        </div>
+        <div class="prose">
+            <p>
+                The slideshow is where all of this actually gets used day to
+                day — the digital-photo-frame side of the app, cycling through
+                photos on the TV or small screen at a fixed interval.
+                What plays isn't fixed to "everything in the library":
+            </p>
+            <ul>
+                <li>the whole photo library</li>
+                <li>one specific directory</li>
+                <li>every photo of a given person, or a given location</li>
+                <li>whatever a natural-language search just returned</li>
+            </ul>
+            <p>
+                That last one is the one I use most: search "Sophie and Mark at the beach",
+                then let those results run as a slideshow instead of flipping
+                through them one at a time. Search isn't just a lookup here — it's
+                also how you build an ad-hoc slideshow on the fly.
+            </p>
+        </div>
 
-  <!-- ============ FACE DETECTION ============ -->
-  <section id="faces">
-    <div class="section-head">
-      <span class="section-num mono">under the hood</span>
-      <h2>How faces get matched to people</h2>
-    </div>
-    <div class="prose">
-      <p>
-        Detection runs through InsightFace's <span class="mono">buffalo_l</span>
-        model — a RetinaFace detector as the primary pass, with an OpenCV
-        Haar-cascade fallback for the frames RetinaFace misses. (Worth
-        noting: buffalo_l ended up outperforming the newer
-        <span class="mono">antelopev2</span> model in practice, which isn't
-        what the version numbers suggest.) Every photo is corrected for
-        EXIF orientation before detection, since a sideways photo throws
-        bounding boxes off completely, and the raw detections are cleaned
-        up afterwards — overlapping boxes merged by IoU, and implausible
-        ones dropped by aspect ratio, since a detector run over real photos
-        always returns some noise.
-      </p>
-      <p>
-        Each surviving face becomes a numeric embedding — a fixed-length
-        vector fingerprint of that face, not a stored image. Recognition
-        happens entirely in that vector space: each known person is
-        represented by an L2-normalised centroid of their embeddings, and a
-        new face is matched by cosine distance to the nearest centroid
-        rather than by comparing pixels at all.
-      </p>
-      <p>
-        The matching itself is deliberately cautious. Small, newly-formed
-        clusters use a stricter distance threshold than established ones,
-        so one weak match early on can't drag a person's whole cluster off
-        course. Timestamps factor in too — a candidate face closer in time
-        to a person's existing photos is treated as a somewhat likelier
-        match, which helps separate two people who genuinely look alike.
-        None of it is treated as final: faces can be reassigned, merged
-        into another cluster, or excluded from matching entirely — useful
-        for a mask or a bad crop that shouldn't pull a centroid off center —
-        without being deleted from the catalogue.
-      </p>
-    </div>
-  </section>
+        <div class="section-head" style="margin-top: 64px;">
+            <span class="section-num mono">04 — remote control</span>
+            <h2>Everything is also a REST API</h2>
+        </div>
+        <div class="prose">
+            <p>
+                The touchscreen and TV aren't the only way in. The Spring Boot
+                backend exposes all of this — cataloguing, search, and slideshow
+                control — as REST endpoints, backing a set of web pages. Search
+                results, cataloguing progress, and what's currently playing on the
+                TV can all be checked and controlled from any browser on the
+                network, phone included, without touching the Pi itself.
+            </p>
+            <p>
+                In practice that means I can kick off cataloguing a new folder,
+                run a natural-language search, or start a slideshow of the
+                results, all from my phone, while the Pi just gets on with it
+                headless in another room. The API is self-documented with Swagger
+                UI, generated straight from the Spring Boot endpoints, so it's
+                also just usable directly for anything the web pages don't cover.
+            </p>
+        </div>
+    </section>
 
-  <!-- ============ NL SEARCH ============ -->
-  <section id="nl-search">
-    <div class="section-head">
-      <span class="section-num mono">under the hood</span>
-      <h2>How the natural language search works</h2>
-    </div>
-    <div class="prose">
-      <p>
-        A typed query never touches the photo library directly — it's
-        first handed to a small local language model, running through
-        Ollama, whose only job is to turn a sentence into a structured
-        request: which person, which place, which tags or landmarks, what
-        kind of mood or activity.
-      </p>
-      <p>
-        That structured request is then run against the catalogue like any
-        other filtered search. So <span class="mono">"beach photos with
+    <!-- ============ ARCHITECTURE ============ -->
+    <section id="architecture">
+        <div class="section-head">
+            <span class="section-num mono">how it's built</span>
+            <h2>General architecture</h2>
+        </div>
+        <div class="prose">
+            <p>
+                The Pi runs the JavaFX front end and a Spring Boot backend side by
+                side, with SQLite holding all the catalogue data. The Pi is capable
+                enough for the app itself and for lighter processing, but running a
+                vision model against every photo would take months to process the
+                whole catalogue — so the heaviest AI work is offloaded to a second
+                machine on the network (still relatively cheap consumer hardware),
+                reachable from Ollama's API, while the Pi stays responsive for the UI.
+            </p>
+        </div>
+
+        <div class="diagram">
+            <div class="diagram-row">
+                <div class="diagram-box">
+                    <span class="mono">source</span>
+                    Cloud storage, mounted via rclone
+                </div>
+                <div class="diagram-arrow">→</div>
+                <div class="diagram-box">
+                    <span class="mono">pi 5</span>
+                    JavaFX UI + Spring Boot + SQLite
+                </div>
+            </div>
+
+            <div class="diagram-branches">
+                <div class="diagram-box">
+                    <span class="mono">exif</span>
+                    Metadata &amp; GPS extraction, reverse-geocoded to a place name
+                </div>
+                <div class="diagram-box">
+                    <span class="mono">faces</span>
+                    Detection &amp; matching against known people
+                </div>
+                <div class="diagram-box">
+                    <span class="mono">vision</span>
+                    Tags, mood, landmarks — via a model on a second machine
+                </div>
+            </div>
+
+            <div class="diagram-row">
+                <div class="diagram-box">
+                    <span class="mono">catalogue</span>
+                    All of the above merged into one record per photo
+                </div>
+                <div class="diagram-arrow">→</div>
+                <div class="diagram-box">
+                    <span class="mono">search</span>
+                    Structured filters, or a natural-language query
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ AI STACK ============ -->
+    <section id="ai-stack">
+        <div class="section-head">
+            <span class="section-num mono">the ai</span>
+            <h2>Three different kinds of AI, one small board</h2>
+        </div>
+        <div class="prose">
+            <p>
+                The catalogue leans on three distinct kinds of AI, each doing a
+                different job: <strong>computer vision</strong> for face detection
+                and recognition, a <strong>vision-language model</strong> for
+                scene understanding — tags, mood, landmarks — and a small
+                <strong>local LLM</strong> for turning a plain-English search into
+                a structured query. Every one of them runs locally, through
+                Ollama, on hardware I own. No photo, no query, and no API call
+                ever leaves the network — there's no cloud AI provider anywhere
+                in the loop, by design, not by accident.
+            </p>
+            <p>
+                That "by design" matters: the photo library is personal, so
+                sending it through a third-party API was off the table from the
+                start. Local inference also means cataloguing thousands of photos
+                — and re-cataloguing them repeatedly during development, while
+                tuning prompts and comparing models — costs electricity, not a
+                per-token bill. The trade-off is that the hardware has to actually
+                carry the load, which shaped a lot of the engineering below.
+            </p>
+        </div>
+
+        <div class="spec-strip" style="margin-top: 24px;">
+            <span class="spec-chip">computer vision</span>
+            <span class="spec-chip">face recognition</span>
+            <span class="spec-chip">embedding similarity &amp; clustering</span>
+            <span class="spec-chip">vision-language models</span>
+            <span class="spec-chip">local LLM inference</span>
+            <span class="spec-chip">prompt engineering</span>
+            <span class="spec-chip">structured output / JSON schema</span>
+            <span class="spec-chip">edge / on-device AI</span>
+            <span class="spec-chip">model evaluation</span>
+        </div>
+
+        <div class="section-head" style="margin-top: 56px;">
+            <h3 style="font-size: 1.2rem;">The local inference rig</h3>
+        </div>
+        <div class="prose">
+            <p>
+                The Pi handles the app, the database, and the lighter local-search
+                model. The vision-language model — the expensive part — runs on a
+                second machine on the same network, reached from the Pi purely
+                through Ollama's API:
+            </p>
+        </div>
+        <div class="spec-strip" style="margin-top: 12px;">
+            <span class="spec-chip">Beelink GTi15 Ultra</span>
+            <span class="spec-chip">64GB RAM</span>
+            <span class="spec-chip">Intel Arc 140T iGPU</span>
+            <span class="spec-chip">Vulkan backend</span>
+            <span class="spec-chip">~99 TOPS</span>
+        </div>
+        <div class="prose" style="margin-top: 20px;">
+            <p>
+                Ollama drives that iGPU through its Vulkan backend, so the vision
+                model runs on-device the same way it would on a discrete GPU, just
+                without one. Two machines, two very different jobs, both entirely
+                local — the split exists purely so a lightweight board can host
+                the app while a heavier model still gets real compute to run on.
+            </p>
+        </div>
+
+        <div class="section-head" style="margin-top: 56px;">
+            <h3 style="font-size: 1.2rem;">Four problems that don't show up in a tutorial</h3>
+        </div>
+
+        <div class="diagram-branches" style="margin-top: 0;">
+            <div class="diagram-box">
+                <span class="mono">hardware split, kept local</span>
+                A Pi 5 can run the app comfortably, but not a vision-language
+                model against every photo. Rather than reach for a cloud API, the
+                heavy inference runs on the second machine above — still on the
+                local network, still no external call. The Pi stays responsive;
+                the expensive model runs where the hardware actually fits it.
+            </div>
+            <div class="diagram-box">
+                <span class="mono">one model loaded at a time</span>
+                Running the vision model and the search model simultaneously
+                would blow the memory budget on modest hardware, so a small model
+                manager swaps which one is loaded based on which job is active —
+                a constraint that mostly disappears if you're calling a hosted
+                API, but is unavoidable the moment inference has to fit on
+                hardware you actually own.
+            </div>
+            <div class="diagram-box">
+                <span class="mono">reliable json from a small model</span>
+                Natural-language search depends on a 3B-parameter local model
+                returning valid, schema-shaped JSON every time — no small ask for
+                a model that size. The fix that mattered most was marking optional
+                fields as <em>required-but-nullable</em> in the schema: an
+                optional field, a small model will often skip outright; a required
+                nullable one, it reliably fills in or explicitly nulls.
+            </div>
+            <div class="diagram-box">
+                <span class="mono">evaluating models on the real task</span>
+                Picking each model meant testing candidates head to head on actual
+                queries and actual hardware, not benchmark scores. The first
+                vision model tried covered structured labels correctly only about
+                56% of the time; a search-model candidate that looked fine on
+                paper OOM-crashed the Pi at run time. The models that shipped were
+                the ones that held up under those conditions, not the newest ones.
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ FACE DETECTION ============ -->
+    <section id="faces">
+        <div class="section-head">
+            <span class="section-num mono">under the hood</span>
+            <h2>How faces get matched to people</h2>
+        </div>
+        <div class="prose">
+            <p>
+                Detection runs through InsightFace's <span class="mono">buffalo_l</span>
+                model — a RetinaFace detector as the primary pass, with an OpenCV
+                Haar-cascade fallback for the frames RetinaFace misses. (Worth
+                noting: buffalo_l ended up outperforming the newer
+                <span class="mono">antelopev2</span> model in practice, which isn't
+                what the version numbers suggest.) Every photo is corrected for
+                EXIF orientation before detection, since a sideways photo throws
+                bounding boxes off completely, and the raw detections are cleaned
+                up afterwards — overlapping boxes merged by IoU, and implausible
+                ones dropped by aspect ratio, since a detector run over real photos
+                always returns some noise.
+            </p>
+            <p>
+                Each surviving face becomes a numeric embedding — a fixed-length
+                vector fingerprint of that face, not a stored image. Recognition
+                happens entirely in that vector space: each known person is
+                represented by an L2-normalised centroid of their embeddings, and a
+                new face is matched by cosine distance to the nearest centroid
+                rather than by comparing pixels at all.
+            </p>
+            <p>
+                The matching itself is deliberately cautious. Small, newly-formed
+                clusters use a stricter distance threshold than established ones,
+                so one weak match early on can't drag a person's whole cluster off
+                course. Timestamps factor in too — a candidate face closer in time
+                to a person's existing photos is treated as a somewhat likelier
+                match, which helps separate two people who genuinely look alike.
+                None of it is treated as final: faces can be reassigned, merged
+                into another cluster, or excluded from matching entirely — useful
+                for a mask or a bad crop that shouldn't pull a centroid off center —
+                without being deleted from the catalogue.
+            </p>
+        </div>
+    </section>
+
+    <!-- ============ NL SEARCH ============ -->
+    <section id="nl-search">
+        <div class="section-head">
+            <span class="section-num mono">under the hood</span>
+            <h2>How the natural language search works</h2>
+        </div>
+        <div class="prose">
+            <p>
+                A typed query never touches the photo library directly — it's
+                first handed to a small local language model, running through
+                Ollama, whose only job is to turn a sentence into a structured
+                request: which person, which place, which tags or landmarks, what
+                kind of mood or activity.
+            </p>
+            <p>
+                That structured request is then run against the catalogue like any
+                other filtered search. So <span class="mono">"beach photos with
         the dog last summer"</span> resolves to a location hint, a tag,
-        and a date range before a single photo is looked at — the language
-        model's only job is translation, not the search itself.
-      </p>
-    </div>
-  </section>
+                and a date range before a single photo is looked at — the language
+                model's only job is translation, not the search itself.
+            </p>
+        </div>
+    </section>
 
-  <!-- ============ GALLERY ============ -->
-  <section id="gallery">
-    <div class="section-head">
-      <span class="section-num mono">in practice</span>
-      <h2>A few shots of it running</h2>
-    </div>
+    <!-- ============ GALLERY ============ -->
+    <section id="gallery">
+        <div class="section-head">
+            <span class="section-num mono">in practice</span>
+            <h2>A few shots of it running</h2>
+        </div>
 
-    <div class="contact-sheet">
-      <div class="frame">
-        <div class="placeholder-label">images/gallery-1.jpg<br>slideshow on the TV</div>
-      </div>
-      <div class="frame">
-        <div class="placeholder-label">images/gallery-2.jpg<br>touchscreen search UI</div>
-      </div>
-      <div class="frame">
-        <div class="placeholder-label">images/gallery-3.jpg<br>person / face view</div>
-      </div>
-      <div class="frame-caption">Will upload screenshoots at some point.</div>
-    </div>
-  </section>
+        <div class="contact-sheet">
+            <div class="frame">
+                <div class="placeholder-label">images/gallery-1.jpg<br>slideshow on the TV</div>
+            </div>
+            <div class="frame">
+                <div class="placeholder-label">images/gallery-2.jpg<br>touchscreen search UI</div>
+            </div>
+            <div class="frame">
+                <div class="placeholder-label">images/gallery-3.jpg<br>person / face view</div>
+            </div>
+            <div class="frame-caption">Will upload screenshoots at some point.</div>
+        </div>
+    </section>
 
-  <!-- ============ VIDEO ============ -->
-  <section id="demo">
-    <div class="section-head">
-      <span class="section-num mono">demo</span>
-      <h2>A short clip of a search in action</h2>
-    </div>
-    <div class="prose">
-      <p>
-        Will upload a video at some point.
-      </p>
-    </div>
-    <div class="video-frame">
-      <iframe
-        src="https://www.youtube.com/embed/YOUTUBE_VIDEO_ID"
-        title="pifxui photo search demo"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen>
-      </iframe>
-    </div>
-  </section>
+    <!-- ============ VIDEO ============ -->
+    <section id="demo">
+        <div class="section-head">
+            <span class="section-num mono">demo</span>
+            <h2>A short clip of a search in action</h2>
+        </div>
+        <div class="prose">
+            <p>
+                Will upload a video at some point.
+            </p>
+        </div>
+        <div class="video-frame">
+            <iframe
+                    src="https://www.youtube.com/embed/YOUTUBE_VIDEO_ID"
+                    title="pifxui photo search demo"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+            </iframe>
+        </div>
+    </section>
 
-  <!-- ============ CONTACT ============ -->
-  <section id="contact">
-    <div class="section-head">
-      <span class="section-num mono">get in touch</span>
-      <h2>Contact</h2>
-    </div>
-    <div class="prose">
-      <p>Questions, feedback — reach out.</p>
-      <p>Gabriele Rossetti</p>
-      <p><a id="contact-email" class="mono" href="#">enable JavaScript to view</a></p>
-      <noscript><p>My email is built with JavaScript to keep it out of automated scrapers — please view this page with JavaScript enabled to see it.</p></noscript>
-    </div>
-  </section>
+    <!-- ============ CONTACT ============ -->
+    <section id="contact">
+        <div class="section-head">
+            <span class="section-num mono">get in touch</span>
+            <h2>Contact</h2>
+        </div>
+        <div class="prose">
+            <p>Questions, feedback — reach out.</p>
+            <p>Gabriele Rossetti</p>
+            <p><a id="contact-email" class="mono" href="#">enable JavaScript to view</a></p>
+            <noscript><p>My email is built with JavaScript to keep it out of automated scrapers — please view this page
+                with JavaScript enabled to see it.</p></noscript>
+        </div>
+    </section>
 
-  <footer>
-    <p>pifxui — a personal project, written up here mostly so future-me remembers how it works.</p>
-  </footer>
+    <footer>
+        <p>pifxui — a personal project, written up here mostly so future-me remembers how it works.</p>
+    </footer>
 
 </div>
 
 <script>
-  // Email is assembled at runtime from character codes rather than written
-  // as plain text, so it never appears as a literal string, an "@" sign,
-  // or a "mailto:" link in the page source — that's enough to stop the
-  // vast majority of automated scrapers, which read raw HTML and don't
-  // execute JavaScript. It does nothing to stop a scraper sophisticated
-  // enough to run a full headless browser, but those are rare for
-  // low-value targets like a personal contact address.
-  (function () {
-    var codes = [103, 97, 98, 46, 114, 115, 116, 64, 103, 109, 97, 105, 108, 46, 99, 111, 109];
-    var address = String.fromCharCode.apply(null, codes);
-    var link = document.getElementById('contact-email');
-    if (link) {
-      link.href = ['ma', 'il', 'to:'].join('') + address;
-      link.textContent = address;
-    }
-  })();
+    // Email is assembled at runtime from character codes rather than written
+    // as plain text, so it never appears as a literal string, an "@" sign,
+    // or a "mailto:" link in the page source — that's enough to stop the
+    // vast majority of automated scrapers, which read raw HTML and don't
+    // execute JavaScript. It does nothing to stop a scraper sophisticated
+    // enough to run a full headless browser, but those are rare for
+    // low-value targets like a personal contact address.
+    (function () {
+        var codes = [103, 97, 98, 46, 114, 115, 116, 64, 103, 109, 97, 105, 108, 46, 99, 111, 109];
+        var address = String.fromCharCode.apply(null, codes);
+        var link = document.getElementById('contact-email');
+        if (link) {
+            link.href = ['ma', 'il', 'to:'].join('') + address;
+            link.textContent = address;
+        }
+    })();
 </script>
 
 </body>
