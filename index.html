@@ -455,7 +455,7 @@
     <div class="hero-kicker mono">project log — photo catalogue</div>
     <h1>Teaching a Raspberry&nbsp;Pi to know my photo library</h1>
     <p class="hero-sub">
-      pifxui is a JavaFX app that runs headless on a Pi 5, catalogues every
+      pifxui is a JavaFX app that runs headless on a Raspberry Pi 5, catalogues every
       photo in my cloud storage using local AI models, and lets me find any
       of them by describing what's in them — a person, a place, a mood —
       instead of remembering a folder name.
@@ -490,10 +490,10 @@
         I built an app, from scratch, that looks through my personal photo
         library, works out who's in each photo, where it was taken, and
         what's happening in it — then lets me search all of that with a
-        plain sentence, like "photos of Mark at the beach", instead of
+        plain sentence, like "photos of Sophie at the beach", instead of
         scrolling through folders looking for it myself. Whatever comes
-        back can also just play as a slideshow on the TV, like a digital
-        photo frame that already knows what you asked for.
+        back can also just play as a slideshow on the small screen or the TV,
+        like a digital photo frame that already knows what you asked for.
       </p>
       <p>
         The interesting part isn't the photo app — it's how it's built.
@@ -552,7 +552,7 @@
       </div>
       <div class="spec-row">
         <dt>displays</dt>
-        <dd>A TV for the main slideshow view, plus a 10" touchscreen as a secondary panel</dd>
+        <dd>A TV and a 10" touchscreen for the slideshow view and other functions (ie. UI)</dd>
       </div>
       <div class="spec-row">
         <dt>input</dt>
@@ -581,7 +581,7 @@
         and TV:
       </p>
       <ul>
-        <li>synced Spotify lyrics for whatever's currently playing</li>
+        <li>synced Spotify lyrics for whatever's currently playing (we all love Karaoke!). Spotify doesn't play on the PI, can be playing anywhere. The app connects to it via Spotify APIs</li>
         <li>indoor air quality and pollution readings from an Enviro+ sensor</li>
         <li>a handful of other small utilities</li>
       </ul>
@@ -612,11 +612,11 @@
       <div>
         <h3>What gets extracted per photo</h3>
         <ul>
-          <li>Face details, matched against known people</li>
-          <li>EXIF metadata — camera, date, GPS</li>
-          <li>Location, resolved from GPS to a place name</li>
+          <li>Face details, matched against known people in the database</li>
+          <li>EXIF metadata — camera, date, time, GPS, etc</li>
+          <li>Location, resolved from GPS to a real place name. It resolves country, city and region using GPS coordinates.</li>
           <li>Landmarks, when a recognisable one is in frame</li>
-          <li>Tags, activities, and general mood</li>
+          <li>Description, Tags, activities, and general mood</li>
         </ul>
       </div>
     </div>
@@ -630,7 +630,7 @@
       <div>
         <h3>Structured search</h3>
         <ul>
-          <li>By person — everyone tagged in a photo</li>
+          <li>By person — everyone tagged in a photo in a database</li>
           <li>By landmark — a specific place or monument</li>
           <li>By location — city, region, or country</li>
         </ul>
@@ -639,9 +639,11 @@
         <h3>Natural language search</h3>
         <p>Or skip the filters and just describe the photo:</p>
         <div class="query-list">
-          <div class="query"><span class="prompt">&gt;</span>give all the photos with Mark</div>
+          <div class="query"><span class="prompt">&gt;</span>give all the photos with Sophie</div>
           <div class="query"><span class="prompt">&gt;</span>show me sunset photos from Italy</div>
           <div class="query"><span class="prompt">&gt;</span>find pictures at the beach with the dog</div>
+          <div class="query"><span class="prompt">&gt;</span>find pictures with Sophie and Mark at the pool</div>
+          <div class="query"><span class="prompt">&gt;</span>find pictures with Sophie at the beech in Greece</div>
         </div>
       </div>
     </div>
@@ -654,8 +656,8 @@
       <p>
         The slideshow is where all of this actually gets used day to
         day — the digital-photo-frame side of the app, cycling through
-        photos on the TV at a fixed interval. What plays isn't fixed to
-        "everything in the library":
+        photos on the TV or small screen at a fixed interval.
+        What plays isn't fixed to "everything in the library":
       </p>
       <ul>
         <li>the whole photo library</li>
@@ -664,7 +666,7 @@
         <li>whatever a natural-language search just returned</li>
       </ul>
       <p>
-        That last one is the one I use most: search "Mark at the beach",
+        That last one is the one I use most: search "Sophie and Mark at the beach",
         then let those results run as a slideshow instead of flipping
         through them one at a time. Search isn't just a lookup here — it's
         also how you build an ad-hoc slideshow on the fly.
@@ -683,9 +685,10 @@
         The Pi runs the JavaFX front end and a Spring Boot backend side by
         side, with SQLite holding all the catalogue data. The Pi is capable
         enough for the app itself and for lighter processing, but running a
-        vision model against every photo would swamp it — so the heaviest
-        AI work is offloaded to a second machine on the network, reachable
-        from Ollama's API, while the Pi stays responsive for the UI.
+        vision model against every photo would take months to process the
+        whole catalogue — so the heaviest AI work is offloaded to a second
+        machine on the network (still consumer hardware), reachable from
+        Ollama's API, while the Pi stays responsive for the UI.
       </p>
     </div>
 
@@ -779,8 +782,8 @@
       <p>
         The Pi handles the app, the database, and the lighter local-search
         model. The vision-language model — the expensive part — runs on a
-        second always-on machine on the same network, reached from the Pi
-        purely through Ollama's API:
+        second machine on the same network, reached from the Pi purely
+        through Ollama's API:
       </p>
     </div>
     <div class="spec-strip" style="margin-top: 12px;">
@@ -961,7 +964,8 @@
       <h2>Contact</h2>
     </div>
     <div class="prose">
-      <p>Questions, feedback, or opportunities — reach out.</p>
+      <p>Questions, feedback — reach out.</p>
+      <p>Gabriele Rossetti</p>
       <p><a id="contact-email" class="mono" href="#">enable JavaScript to view</a></p>
       <noscript><p>My email is built with JavaScript to keep it out of automated scrapers — please view this page with JavaScript enabled to see it.</p></noscript>
     </div>
